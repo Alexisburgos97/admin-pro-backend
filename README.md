@@ -1,4 +1,4 @@
-#AdminPro - Backend
+#AdminPro - Backend - Proyecto con: Node - Express - Mongo DB
 
 Recuerden ejecutar
 
