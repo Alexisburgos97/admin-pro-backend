@@ -1,72 +1,62 @@
 const { response } = require('express');
 const bcryptjs = require('bcryptjs');
 
-const Usuario = require('../models/usuario');
+const Medico = require('../models/medico');
 
 const {generarJWT} = require("../helpers/jwt");
 
-const getUsuarios = async (req, resp = response) => {
+const getMedicos = async (req, resp = response) => {
 
-    const desde = Number(req.query.desde) || 0;
-
-    // const usuarios = await Usuario
-    //     .find({}, 'nombre email role google')
-    //     .skip(desde)
-    //     .limit(5);
-    //
-    // const total = await Usuario.count();
-
-    const [usuarios, total] = await Promise.all([
-        Usuario
-            .find({}, 'nombre email role google img')
-            .skip(desde)
-            .limit(5),
-
-        Usuario.count()
-    ]);
+    const medicos = await Medico.find()
+        .populate('usuario', 'nombre email img')
+        .populate('hospital', 'nombre img');
 
     resp.status(200).json({
         ok: true,
-        msg: "Get usuarios",
-        usuarios: usuarios,
-        total: total,
-        uid: req.uid
+        msg: "Get medicos",
+        medicos: medicos
     });
 };
 
-const crearUsuario = async (req, resp = response) => {
+const crearMedico = async (req, resp = response) => {
 
-    const {nombre, password, email} = req.body;
+    const uid = req.uid;
+    const medico = new Medico({
+        usuario: uid,
+        medico: '',
+        ...req.body
+    });
 
     try{
 
-        const existeEmail = await Usuario.find({email: email});
+        const medicoDB = await medico.save();
 
-        console.log(existeEmail)
-
-        if( Array.isArray(existeEmail) && existeEmail.length > 0 ){
-            return resp.status(400).json({
-                ok: false,
-                msg: "Error, el correo ya está registrado"
-            });
-        }
-
-        const usuario = new Usuario(req.body);
-
-        //Encriptar contraseña
-        const salt = bcryptjs.genSaltSync();
-        usuario.password = bcryptjs.hashSync(password, salt);
-
-        await usuario.save();
-
-        //Generar JWT
-        const token = await generarJWT(usuario.id);
-
+        // const existeEmail = await Usuario.find({email: email});
+        //
+        // console.log(existeEmail)
+        //
+        // if( Array.isArray(existeEmail) && existeEmail.length > 0 ){
+        //     return resp.status(400).json({
+        //         ok: false,
+        //         msg: "Error, el correo ya está registrado"
+        //     });
+        // }
+        //
+        // const usuario = new Usuario(req.body);
+        //
+        // //Encriptar contraseña
+        // const salt = bcryptjs.genSaltSync();
+        // usuario.password = bcryptjs.hashSync(password, salt);
+        //
+        // await usuario.save();
+        //
+        // //Generar JWT
+        // const token = await generarJWT(usuario.id);
+        //
         resp.status(201).json({
             ok: true,
-            msg: "Usuario creado correctamente",
-            usuario: usuario,
-            token: token
+            msg: "Medico creado correctamente",
+            medico: medicoDB
         });
 
     }catch (error){
@@ -78,7 +68,7 @@ const crearUsuario = async (req, resp = response) => {
     }
 }
 
-const actualizarUsuario = async (req, resp = response) => {
+const actualizarMedico = async (req, resp = response) => {
 
     const uid = req.params.id;
 
@@ -130,7 +120,7 @@ const actualizarUsuario = async (req, resp = response) => {
 
 }
 
-const eliminarUsuario = async (req, resp = response) => {
+const eliminarMedico = async (req, resp = response) => {
 
     const uid = req.params.id;
 
@@ -163,8 +153,8 @@ const eliminarUsuario = async (req, resp = response) => {
 }
 
 module.exports = {
-    getUsuarios,
-    crearUsuario,
-    actualizarUsuario,
-    eliminarUsuario
+    getMedicos,
+    crearMedico,
+    actualizarMedico,
+    eliminarMedico
 }
