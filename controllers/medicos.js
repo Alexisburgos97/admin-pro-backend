@@ -4,6 +4,7 @@ const bcryptjs = require('bcryptjs');
 const Medico = require('../models/medico');
 
 const {generarJWT} = require("../helpers/jwt");
+const Hospital = require("../models/hospital");
 
 const getMedicos = async (req, resp = response) => {
 
@@ -70,44 +71,31 @@ const crearMedico = async (req, resp = response) => {
 
 const actualizarMedico = async (req, resp = response) => {
 
-    const uid = req.params.id;
+    const id = req.params.id;
+    const uid = req.uid;
 
     try{
 
-        const usuarioDB = await Usuario.findById(uid);
+        const medicoDB = await Medico.findById(id);
 
-        if( !usuarioDB ){
+        if( !medicoDB ){
             return resp.status(404).json({
                 ok: false,
-                msg: "Error, no existe un usuario con ese id"
+                msg: "Error, no existe un medico con ese id"
             });
         }
 
-        const campos = req.body;
-        delete campos.password;
-        delete campos.google;
+        const cambiosMedico = {
+            ...req.body,
+            usuario: uid
+        };
 
-        if( usuarioDB.email === req.body.email ){
-            delete campos.email;
-        }else{
-
-            const existeEmail = await Usuario.findOne({email: req.body.email});
-
-            if( existeEmail ){
-                return resp.status(400).json({
-                    ok: false,
-                    msg: "Error, el correo ya está registrado"
-                });
-            }
-
-        }
-
-        const usuarioActualizado = await Usuario.findByIdAndUpdate(uid, campos, {new: true} );
+        const medicoActualizado = await Medico.findByIdAndUpdate(id, cambiosMedico, {new: true} );
 
         resp.status(200).json({
             ok: true,
-            msg: "Usuario actualizado correctamente",
-            usuarioActualizado: usuarioActualizado
+            msg: "Medico actualizado correctamente",
+            medicoActualizado: medicoActualizado
         });
 
     }catch (error){
@@ -122,24 +110,24 @@ const actualizarMedico = async (req, resp = response) => {
 
 const eliminarMedico = async (req, resp = response) => {
 
-    const uid = req.params.id;
+    const id = req.params.id;
 
     try{
 
-        const usuarioDB = await Usuario.findById(uid);
+        const medicoDB = await Medico.findById(id);
 
-        if( !usuarioDB ){
+        if( !medicoDB ){
             return resp.status(404).json({
                 ok: false,
-                msg: "Error, no existe un usuario con ese id"
+                msg: "Error, no existe un medico con ese id"
             });
         }
 
-        await Usuario.findByIdAndDelete(uid);
+        await Medico.findByIdAndDelete(id);
 
         resp.status(200).json({
             ok: true,
-            msg: "Usuario eliminado correctamente"
+            msg: "Medico eliminado correctamente"
         });
 
     }catch (error){

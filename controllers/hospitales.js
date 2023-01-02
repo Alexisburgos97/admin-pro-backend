@@ -68,44 +68,31 @@ const crearHospital = async (req, resp = response) => {
 
 const actualizarHospital = async (req, resp = response) => {
 
-    const uid = req.params.id;
+    const id = req.params.id;
+    const uid = req.uid;
 
     try{
 
-        const usuarioDB = await Usuario.findById(uid);
+        const hospitalDB = await Hospital.findById(id);
 
-        if( !usuarioDB ){
+        if( !hospitalDB ){
             return resp.status(404).json({
                 ok: false,
-                msg: "Error, no existe un usuario con ese id"
+                msg: "Error, no existe un hospital con ese id"
             });
         }
 
-        const campos = req.body;
-        delete campos.password;
-        delete campos.google;
+        const cambiosHospital = {
+            ...req.body,
+            usuario: uid
+        };
 
-        if( usuarioDB.email === req.body.email ){
-            delete campos.email;
-        }else{
-
-            const existeEmail = await Usuario.findOne({email: req.body.email});
-
-            if( existeEmail ){
-                return resp.status(400).json({
-                    ok: false,
-                    msg: "Error, el correo ya está registrado"
-                });
-            }
-
-        }
-
-        const usuarioActualizado = await Usuario.findByIdAndUpdate(uid, campos, {new: true} );
+        const hospitalActualizado = await Hospital.findByIdAndUpdate(id, cambiosHospital, {new: true} );
 
         resp.status(200).json({
             ok: true,
-            msg: "Usuario actualizado correctamente",
-            usuarioActualizado: usuarioActualizado
+            msg: "Hospital actualizado correctamente",
+            hospitalActualizado: hospitalActualizado
         });
 
     }catch (error){
@@ -120,24 +107,24 @@ const actualizarHospital = async (req, resp = response) => {
 
 const eliminarHospital = async (req, resp = response) => {
 
-    const uid = req.params.id;
+    const id = req.params.id;
 
     try{
 
-        const usuarioDB = await Usuario.findById(uid);
+        const hospitalDB = await Hospital.findById(id);
 
-        if( !usuarioDB ){
+        if( !hospitalDB ){
             return resp.status(404).json({
                 ok: false,
-                msg: "Error, no existe un usuario con ese id"
+                msg: "Error, no existe un hospital con ese id"
             });
         }
 
-        await Usuario.findByIdAndDelete(uid);
+        await Hospital.findByIdAndDelete(id);
 
         resp.status(200).json({
             ok: true,
-            msg: "Usuario eliminado correctamente"
+            msg: "Hospital eliminado correctamente"
         });
 
     }catch (error){
