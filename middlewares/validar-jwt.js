@@ -54,6 +54,8 @@ const validarADMIN_ROLE = async ( req, resp, next ) => {
             });
         }
 
+        next();
+
     }catch (error){
         return resp.status(401).json({
             ok: false,
